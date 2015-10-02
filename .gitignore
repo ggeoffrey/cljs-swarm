@@ -45,3 +45,9 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+*.sublime-workspace
+*.sublime-project
+
+target/
+resources/public/js/compiled/
+figwheel_server.log

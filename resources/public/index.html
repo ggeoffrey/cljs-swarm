@@ -6,10 +6,43 @@
     <link href="css/style.css" rel="stylesheet" type="text/css">
   </head>
   <body>
-    <div id="app">
-      <h2>Figwheel template</h2>
-      <p>Checkout your developer console.</p>
-    </div>
+    
+    <canvas id="target" width="800" height="600"></canvas>
+
+    <script src="libs/three.min.js"></script>
+    <script src="libs/OrbitControls.js"></script>
+    <script src="libs/stats.min.js"></script>
+    <script src="libs/CanvasRenderer.js"></script>
+    <script src="libs/Projector.js"></script>
+    
     <script src="js/compiled/swarm.js" type="text/javascript"></script>
+
+    <script>
+
+      function resize (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+
+      function start(){
+        var canvas = document.getElementById('target');
+
+        resize(canvas);
+
+        var params = {
+          "canvas": canvas,
+          "dev-mode": true
+        };
+      
+        window.s = swarm.core.create(params);
+
+        document.body.appendChild(s.stats.domElement);
+      
+        //console.log(s);
+      }
+     
+      start();
+
+    </script>
   </body>
 </html>
