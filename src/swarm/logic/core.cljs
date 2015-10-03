@@ -10,21 +10,22 @@
 (declare avoid-escape!)
 (declare move!)
 
+(declare follow-velocity!)
+(declare limit-speed)
+(declare  stay-in-space)
+(declare wind)
 
 
-(def min-distance 20)
+(def min-distance 30)
 
 (defn update-boids!
   "Use swarm intelligence to make tho boids move in a closed space."
   [boids width height depth]
-  (loop [i 0
-         size (dec (count boids))
-         items boids]
-    (let [item (first items)]
-      (set-position! item width height depth boids)
-      )
-    (when (< i size)
-      (recur (inc i) size (next items)))))
+  (let [size (dec (.-length boids))]
+    (loop [i 0]
+      (set-position! (aget boids i) width height depth boids)
+      (when (< i size)
+        (recur (inc i))))))
 
 
 (defn set-position! 
@@ -32,16 +33,30 @@
 	[item width height depth others]
 	(let [  pos (.-position item)
        		x (.-x pos)
-			y (.-y pos)
-			z (.-z pos)
-   			neighbours (get-closests item others 5)
+			    y (.-y pos)
+			    z (.-z pos)
+   			  neighbours (get-closests item others 5)
       		center (get-center neighbours)]
    		
-   		(go-to-center! item center)
-     	;(avoid-collision! item neighbours)
-      	(move! item)
-      	(avoid-escape! item width height depth)
-   	))
+      
+      (let [v1 (go-to-center! item center)
+            v2 (avoid-collision! item neighbours)
+            v3 (follow-velocity! item neighbours)
+            center (stay-in-space item)
+            wind (wind)
+            velocity (-> (.-direction item)
+                       	  (.add v1)
+                          (.add v2)
+                          (.add v3)
+                          (.add center)
+                          (.add wind)
+                          (limit-speed))]
+        
+        (set! (.-direction item) velocity)
+        (.add pos velocity)
+        ;(follow-group! item neighbours)
+       	;(avoid-escape! item width height depth))
+        )))
 
 
 (defn get-closests 
@@ -51,10 +66,14 @@
                                 [ (.distanceTo (.-position item) (.-position other))
                                  other]) others))
         sorted (sort-by first distances)]
-    (mapv last (take n sorted))))
+    (clj->js
+     (mapv last (take n sorted)))))
 
 
-(def center-shared-vector (new js/THREE.Vector3)) ;; Re-use a unique object to improve perfs
+;; Re-use a unique object to improve perfs
+;; Acceptable since we are in a single threaded environnement
+(def center-shared-vector (new js/THREE.Vector3)) 
+
 (defn- get-center 
   "doc-string"
   [neighbours]
@@ -64,7 +83,7 @@
                        y 0
                        z 0]
                   
-                    (let [pos (.-position (nth neighbours i))]
+                    (let [pos (.-position (aget neighbours i))]
 	                    ;(t/log pos)
 	                    (if (< i (dec n))
 	                    	(recur (inc i) (+ x (.-x pos)) (+ y (.-y pos)) (+ z (.-z pos)))
@@ -85,62 +104,135 @@
 
 
 (defn go-to-center!  ;; TODO add velocity parameter
-  "Make a boid move to the center of his group one step
-   Compute de diff Vector between the boid and the center then add 1/100 of its length to the direction
-   for a smooth turn"
-  [item center]
-  (let [dir (.-direction item)
-        pos (.-position item)
-        diff (-> (.clone pos)
-                (.sub center)
-                (.normalize)
-                )]
-    (-> dir
-        (.sub diff)
-        (.normalize))
-    
-    
-    ))
+	"Make a boid move to the center of his group one step
+	Compute de diff Vector between the boid and the center then add 1/100 of its length to the direction
+	for a smooth turn"
+	[item center]
+	(let [dir (.-direction item)
+		pos (.-position item)
 
+		diff (-> (.clone center)
+			(.sub pos)
+			(.divideScalar 50))]
+
+		diff
+		))
+
+(def shared-velocity (new js/THREE.Vector3))
 
 (defn avoid-collision!
   "Avoid collision with other boids"
-  [item others velocity]
+  [item others]
   (let [pos (.-position item)]
+    (.set shared-velocity 0 0 0)
     (doseq [other others]
-      (let [other-pos (.-position other)
-            distance (.distanceTo pos other-pos)]
-        ;(set! (.-velocity item) (/ (+ (.-velocity item) (.-velocity other)) 2))
-        (when (< distance min-distance )
-          (let [clone (.clone pos)
-                sum (.sub clone other-pos)
-                norm (.normalize sum)
-                negated (.negate norm)
-                final (.multiplyScalar negated (.-velocity item))]
-            (.sub pos negated)))))))
+      (when-not (= item other)
+        (let [distance (.distanceTo pos (.-position other))
+              diff (-> (.clone pos)
+                       (.sub (.-position other))
+                       (.divideScalar 5)
+                       )]
+			(when (< distance min-distance)
+     			(.sub shared-velocity diff)))
+        ))
+    ;(t/log shared-velocity)
+    ;(.divideScalar shared-velocity 2)
+    (.negate shared-velocity)
+    (.divideScalar shared-velocity 5)
+    shared-velocity))
 
 
+;; Re-use a unique object to improve perfs
+;; Acceptable since we are in a single threaded environnement
+(def avg-shared-vector (new js/THREE.Vector3)) 
+
+(defn follow-velocity!
+  "Set the velocity to the average of the group"
+  [item others]
+  (.set avg-shared-vector 0 0 0)
+  (doseq [other others]
+    (when-not (= item other)
+      (.add avg-shared-vector (.-direction other))))
+  (.divideScalar avg-shared-vector (dec (count others)))
+  (let [corrected (-> avg-shared-vector
+                      (.sub (.-direction item))
+                      (.divideScalar 8))]
+    corrected))
+
+
+
+(defn limit-speed 
+  "Limit the speed of a boid by reducing the velocity"
+  [velocity]
+  (let [length (.length velocity)]
+    (if (> length 3)
+      (do
+        (-> (.normalize velocity)
+            (.multiplyScalar 3)))
+      (do
+        velocity))))
+
+(def center (new js/THREE.Vector3 100 100 100))
+
+(defn stay-in-space 
+  "Force tho boids to stay near the center"
+  [item]
+  (-> (.clone center)
+      (.sub (.-position item))
+      (.divideScalar 1000)))
+
+
+(def wind-default (-> (new js/THREE.Vector3  -10 -10 -10)
+                      (.divideScalar 100)))
+
+(defn wind
+  "Return a wind force"
+  []
+  wind-default)
+
+
+;; Correct the dirce
 (defn avoid-escape!
-  [item width height depth]
-  
-  (let [pos (.-position item)
-        dir (.-direction item)]
+	"Correct the direction of a boid  if its trying to run away"
+	[item width height depth]
+
+	(let [pos (.-position item)
+		dir (.-direction item)
+  		
+    	w (/ width 2)
+     	h (/ height 2)
+      	d (/ depth 2)
+       ]
+
+    ; when the boid go outside the box on X, correct x direction   
     
-    ; when the boid go outside the box on X, negate x direction
-    (when (or
-            (> (.-x pos) (/ width 2))
-            (< (.-x pos) (- (/ width 2))))
-      (.set dir (- (.-x dir)) (.-y dir) (.-z dir)))
+   (when (> (.-x pos) (- w min-distance))
+     (.set dir (- (- w (.-x pos)) min-distance) (.-y dir) (.-z dir)))
+   (when (< (.-x pos) (+ (- w) min-distance))
+     (.set dir (+ (- (- w) (.-x pos)) min-distance)   (.-y dir) (.-z dir)))
+   
+
+   ; when the boid go outside the box on Y, correct y direction
+   (when (> (.-y pos) (- h min-distance))
+     (.set dir  (.-x dir) (- (- h (.-y pos)) min-distance) (.-z dir)))
+   (when (< (.-y pos) (+ (- h) min-distance))
+      (.set dir    (.-x dir)	(+ (- (- h) (.-y pos)) min-distance)  (.-z dir)))
     
-    ; when the boid go outside the box on Y, negate y direction
-    (when (or
-            (> (.-y pos) (/ height 2))
-            (< (.-y pos) (- (/ height 2))))
-      (.set dir (.-x dir)  (- (.-y dir)) (.-z dir)))
     
-    ; when the boid go outside the box on Z, negate z direction
-    (when (or
-            (> (.-z pos) (/ depth 2))
-            (< (.-z pos) (- (/ depth 2))))
-      (.set dir (.-x dir) (.-y dir) (- (.-z dir)) ))
+    
+    ; when the boid go outside the box on Z, correct z direction
+    (if (> depth (* 3 min-distance))
+      
+      (do
+        (when (> (.-z pos) (- d min-distance))
+      	  (.set dir  (.-x dir) (.-y dir)  (- (- d (.-z pos)) min-distance) ))
+        (when (< (.-z pos) (+ (- d) min-distance))
+      	  (.set dir  (.-x dir) (.-y dir) (+ (- (- d) (.-z pos)) min-distance) )))
+      (do 
+        (.set dir (.-x dir) (.-y dir) 0 )
+        (.set pos (.-x pos) (.-y pos) 0 )))
+    
+    
+    
+    ;(.multiplyScalar dir 2)
     ))

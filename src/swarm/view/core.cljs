@@ -14,16 +14,16 @@
 	"Create a with a given state"
 	[state]
 	(let [opt @state 
-		{canvas :canvas
-			world-width :width
-			world-height :height
-   			world-depth :depth
-			num-boids :boids
-			dev-mode :dev-mode
-			stats :stats} opt
+		{canvas "canvas"
+			world-width "width"
+			world-height "height"
+   			world-depth "depth"
+			num-boids "boids"
+			dev-mode "dev-mode"
+			stats "stats"} opt
   		width (.-width canvas)
     	height (.-height canvas)
-     	center (get-center world-width world-height)
+     	center (get-center world-width world-height world-depth)
 		camera (new js/THREE.PerspectiveCamera 75 (/ width height) 0.1 100000)
 		scene (new js/THREE.Scene)
 		controls (new js/THREE.OrbitControls camera)
@@ -32,6 +32,7 @@
   
   		container (create-container world-width world-height world-depth)
         boids (boids/generate 40)
+        boids-array (clj->js boids) ; used in the render loop for perfs
   		
   		
   		render (fn render []
@@ -42,7 +43,8 @@
 					(when-not (nil? stats)
 						(.begin stats))
      
-     				(logic/update-boids! boids world-width world-height world-depth)
+     				
+     				(logic/update-boids! boids-array world-width world-height world-depth)
          			
      				
 
@@ -53,12 +55,15 @@
 		]
    
    
+   		(t/log canvas)
+   
    		(.setSize renderer width height)
 		(.setClearColor renderer 0x202020)
   
-		(.set (.-position camera) 300 300 300)
-  		(.lookAt camera (new THREE.Vector3 0 0 0))
-  
+		(.set (.-position camera) 600 600 600)
+  		(set! (.-target controls) (.-position container))
+    	(.lookAt camera (.-position container))
+  		
   		
 		(draw-axes! scene)
   
@@ -95,16 +100,16 @@
    "Return a random Vector3 within the borders"
    [width height depth]
    (let [reduce-in-range #(/ (- (rand (* %1 2)) %1) 2 )]
-     (new THREE.Vector3 (reduce-in-range width) (reduce-in-range height)  (reduce-in-range depth) )))
+     (new js/THREE.Vector3 (reduce-in-range width) (reduce-in-range height)  (reduce-in-range depth) )))
  
  (defn- create-container 
    "Create a wireframe Cube. Used as a container for the boids"
    [width height depth]
    (let [center (get-center width height depth) 
-         geom (new THREE.CubeGeometry width height depth)
-         material (new THREE.MeshBasicMaterial #js {"wireframe" false
+         geom (new js/THREE.CubeGeometry width height depth)
+         material (new js/THREE.MeshBasicMaterial #js {"wireframe" false
                                                     "side" 1})
-         cube (new THREE.Mesh geom material)
+         cube (new js/THREE.Mesh geom material)
          position (.-position cube)]
      (.set position (:x center) (:y center) (:z center))
      cube))
@@ -135,26 +140,26 @@
   "Draw the basic x, y and z axes on the scene
   Do not use AxisHelper on purpose"
   [scene]
-  (let [red (new THREE.LineBasicMaterial #js {"color" 0xff0000})
-        green (new THREE.LineBasicMaterial #js {"color" 0x00ff00})
-        blue (new THREE.LineBasicMaterial #js {"color" 0x0000ff})
-        x (new THREE.Geometry)
-        y (new THREE.Geometry)
-        z (new THREE.Geometry)
-        zero (new THREE.Vector3 0 0 0)]
+  (let [red (new js/THREE.LineBasicMaterial #js {"color" 0xff0000})
+        green (new js/THREE.LineBasicMaterial #js {"color" 0x00ff00})
+        blue (new js/THREE.LineBasicMaterial #js {"color" 0x0000ff})
+        x (new js/THREE.Geometry)
+        y (new js/THREE.Geometry)
+        z (new js/THREE.Geometry)
+        zero (new js/THREE.Vector3 0 0 0)]
     (doto (.-vertices x)
       (.push zero)
-      (.push (new THREE.Vector3 10000 0 0)))
+      (.push (new js/THREE.Vector3 10000 0 0)))
     (doto (.-vertices y)
       (.push zero)
-      (.push (new THREE.Vector3 0 10000 0)))
+      (.push (new js/THREE.Vector3 0 10000 0)))
     (doto (.-vertices z)
       (.push zero)
-      (.push (new THREE.Vector3 0 0 10000)))
+      (.push (new js/THREE.Vector3 0 0 10000)))
     
-    (.add scene (new THREE.Line x red))
-    (.add scene (new THREE.Line y green))
-    (.add scene (new THREE.Line z blue)))
+    (.add scene (new js/THREE.Line x red))
+    (.add scene (new js/THREE.Line y green))
+    (.add scene (new js/THREE.Line z blue)))
   
   nil)
 

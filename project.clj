@@ -30,8 +30,13 @@
               :source-paths ["src"]
               :compiler {:output-to "resources/public/js/compiled/swarm.js"
                          :main swarm.core
+                         :externs ["resources/public/libs/three.min.js"
+                                   "resources/public/libs/stats.min.js"
+                                   "resources/public/libs/OrbitControls.js"]
+                         ;:optimizations :whitespace
                          :optimizations :advanced
-                         :pretty-print false}}]}
+                         :pretty-print false
+                         :closure-warnings {:externs-validation :off}}}]}
 
   :figwheel {
              ;; :http-server-root "public" ;; default and assumes "resources" 
