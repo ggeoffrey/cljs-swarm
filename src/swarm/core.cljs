@@ -11,6 +11,7 @@
 
 (defonce default-values {:width 300
                          :height 300
+                         :depth 300
                          :boids 20
                          :positions []
                          :stats (t/create-stats)
