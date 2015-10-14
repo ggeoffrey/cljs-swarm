@@ -1,6 +1,6 @@
 (defproject swarm "0.1.0-SNAPSHOT"
-  :description "FIXME: write this!"
-  :url "http://example.com/FIXME"
+  :description "A swarm intelligence prototype using Clojure and THREE.JS"
+  :url "https://github.com/ggeoffrey/cljs-swarm"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
@@ -9,7 +9,8 @@
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]]
 
   :plugins [[lein-cljsbuild "1.1.0"]
-            [lein-figwheel "0.4.0"]]
+            [lein-figwheel "0.4.0"]
+            [codox "0.8.15"]]
 
   :source-paths ["src"]
 
@@ -68,4 +69,7 @@
 
              ;; to configure a different figwheel logfile path
              ;; :server-logfile "tmp/logs/figwheel-logfile.log" 
-             })
+             }
+  :codox {:language :clojurescript
+          :src-dir-uri "https://github.com/ggeoffrey/cljs-swarm/tree/master/"}
+          :defaults {:doc/format :markdown})
