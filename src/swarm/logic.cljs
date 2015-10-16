@@ -1,4 +1,5 @@
 (ns swarm.logic
+  ""
   (:require [swarm.tools :as t])
   (:require-macros [swarm.macros :refer [def-]]))
 
@@ -73,7 +74,7 @@
 
 
 (def ^:private wind-default (-> (new js/THREE.Vector3  -10 -10 -10)
-                       (.divideScalar 100)))
+                                (.divideScalar 100)))
 
 (defn- wind
   "Return a wind force"

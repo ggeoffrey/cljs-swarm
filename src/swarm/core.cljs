@@ -19,7 +19,7 @@
 
 
 ;; Default options
-(def- default-values {"width" 600
+(def ^:private default-values {"width" 600
                       "height" 600
                       "depth" 600
                       "boids" 60
@@ -32,9 +32,9 @@
 ;; Application state. thread safe with atomic modifications.
 ;; Hold parameters and instances between each code recompilation.
 ;; Allow the application to perform "hot code push".
-(defonce- state (atom {}))
+(defonce ^:private state (atom {}))
 
-(def- hot-code-mode false)
+(def ^:private hot-code-mode false)
 
 (defn on-js-reload
   "Called by the figwheel library when the new compiled code is pushed"
