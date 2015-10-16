@@ -8,4 +8,4 @@
 
 (defmacro defonce-
   [item value]
-  `(defonce ^:private ~item value~))
+  `(defonce ^:private ~item ~value))

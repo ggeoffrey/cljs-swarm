@@ -5,9 +5,9 @@
   For the 3D part look at the swarm.view namespace.
   "
   (:require [swarm.tools :as t]
-            [swarm.view.core :as view]
+            [swarm.view.view :as view]
             [cljs.core :as core ])
-  (:require-macros [swarm.macros :refer [def-]]))
+  (:require-macros [swarm.macros]))
 
 
 

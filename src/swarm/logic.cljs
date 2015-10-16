@@ -8,7 +8,7 @@
 
 
 (defn- distance-vec
-  "Computi euclidian distance between two js/THREE.Vector3"
+  "Compute euclidian distance between two js/THREE.Vector3"
   [v1 v2]
   (.distanceTo v1 v2))
 
@@ -89,12 +89,12 @@
 
 (defn- go-to-center
   "Make a boid move to the center of his group one step
-  Compute de diff Vector between the boid and the center then add 1/100 of its length to the direction
+  Compute the diff Vector between the boid and the center then add 1/100 of its length to the direction
   for a smooth turn"
   [item center]
   (-> (.clone center)
       (.sub (.-position item))
-      (.divideScalar 50)))
+      (.divideScalar 100)))
 
 
 

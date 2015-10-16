@@ -1,4 +1,4 @@
-(ns swarm.view.core
+(ns swarm.view.view
   "Use THREE.js to generate a 3D view.
   @see http://threejs.org/"
 
