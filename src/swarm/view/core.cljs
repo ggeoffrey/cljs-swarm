@@ -10,43 +10,43 @@
 
 
 
- (defn ^:private random-in-range
-   "Give a random number in [-n/2..n/2]"
-   [n]
-   (-> (rand n)
-       (- (/ n 2))))
+(defn- random-in-range
+  "Give a random number in [-n/2..n/2]"
+  [n]
+  (-> (rand n)
+      (- (/ n 2))))
 
 
 
- (defn ^:private get-random-pos
-   "Return a random Vector3 within the borders"
-   [width height depth]
-   (new js/THREE.Vector3 (random-in-range width) (random-in-range height)  (random-in-range depth) ))
+(defn- get-random-pos
+  "Return a random Vector3 within the borders"
+  [width height depth]
+  (new js/THREE.Vector3 (random-in-range width) (random-in-range height)  (random-in-range depth) ))
 
 
-(defn ^:private get-center
+(defn- get-center
   "Return the center of the view based on its width, height and depth -respectivily-."
   [width height depth]
   (new js/THREE.Vector3 (/ width 2), (/ height 2), (/ depth 2)))
 
 
 
-(defn ^:private create-container
-   "Create an inside-out Cube. Used as a container for the boids.
-   The cube is colored inside and transparent from the outside."
-   [width height depth]
-   (let [center (get-center width height depth)
-         geom (new js/THREE.CubeGeometry width height depth)
-         material (new js/THREE.MeshBasicMaterial #js {"wireframe" false
-                                                       "side" js/THREE.BackSide})
-         cube (new js/THREE.Mesh geom material)
-         position (.-position cube)]
-     (.copy position center)
-     cube))
+(defn- create-container
+  "Create an inside-out Cube. Used as a container for the boids.
+  The cube is colored inside and transparent from the outside."
+  [width height depth]
+  (let [center (get-center width height depth)
+        geom (new js/THREE.CubeGeometry width height depth)
+        material (new js/THREE.MeshBasicMaterial #js {"wireframe" false
+                                                      "side" js/THREE.BackSide})
+        cube (new js/THREE.Mesh geom material)
+        position (.-position cube)]
+    (.copy position center)
+    cube))
 
 
 
-(defn ^:private draw-axes!
+(defn- draw-axes!
   "Draw the basic x, y and z axes in the scene
   Do not use THREE.AxisHelper on purpose"
   [scene]
@@ -88,12 +88,15 @@
 
         ;;destructuring the app state
         {canvas "canvas"
-          world-width "width"
-          world-height "height"
-          world-depth "depth"
-          num-boids "boids"
-          dev-mode "dev-mode"
-          stats "stats"} options
+         world-width "width"
+         world-height "height"
+         world-depth "depth"
+         num-boids "boids"
+         nb-neighbours "nb-neighbours"
+         min-distance "min-distance"
+         max-speed "max-speed"
+         dev-mode "dev-mode"
+         stats "stats"} options
 
         width (.-width canvas)
         height (.-height canvas)
@@ -109,49 +112,49 @@
 
         render (fn render []
 
-           (when (:run @state)
-              (.requestAnimationFrame js/window render)
+                 (when (:run @state)
+                   (.requestAnimationFrame js/window render)
 
-              (when-not (nil? stats)
-                (.begin stats))
+                   (when-not (nil? stats)
+                     (.begin stats))
 
-              (logic/update-boids! boids)
+                   (logic/update-boids! boids min-distance nb-neighbours max-speed)
 
-              (.render renderer scene camera)
+                   (.render renderer scene camera)
 
-              (when-not (nil? stats)
-                (.end stats)))
-        )
-    ]
+                   (when-not (nil? stats)
+                     (.end stats)))
+                 )
+        ]
 
-      ;;  INIT defaults
-      (.setSize renderer width height)
-      (.setClearColor renderer 0x202020)
-      (.set (.-position camera) 600 600 600)
+    ;;  INIT defaults
+    (.setSize renderer width height)
+    (.setClearColor renderer 0x202020)
+    (.set (.-position camera) 600 600 600)
 
-      ;; SET the orbiting center to the center of the container
-      (set! (.-target controls) (.-position container))
-      ;; make the camera look at the center
-      (.lookAt camera (.-position container))
+    ;; SET the orbiting center to the center of the container
+    (set! (.-target controls) (.-position container))
+    ;; make the camera look at the center
+    (.lookAt camera (.-position container))
 
 
-      ;; ADD objects to the scene
-      (draw-axes! scene)
-      (.add scene container)
+    ;; ADD objects to the scene
+    (draw-axes! scene)
+    (.add scene container)
 
-      (doseq [item boids]
-          (.copy (.-position item) (get-random-pos world-width world-height world-depth))
-          (.add container item))
+    (doseq [item boids]
+      (.copy (.-position item) (get-random-pos world-width world-height world-depth))
+      (.add container item))
 
-      ; START the render loop
-      (render)
+    ; START the render loop
+    (render)
 
-      ; RETURN state and closures
-      (let [callbacks {:stop  #(swap! state assoc :run false)
-                       :start #(do (swap! state assoc :run true)
-                                   (render)
-                                    nil)}]
-        (merge options callbacks))))
+    ; RETURN state and closures
+    (let [callbacks {:stop  #(swap! state assoc :run false)
+                     :start #(do (swap! state assoc :run true)
+                               (render)
+                               nil)}]
+      (merge options callbacks))))
 
 
 

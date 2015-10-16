@@ -1,12 +1,13 @@
 (ns ^:figwheel-always  swarm.core
   "Entry point of the application.
-   Use the figwheel library for live coding.
-   If you are here to see how the swarm work then look at swarm.logic.core.
-   For the 3D part look at the swarm.view namespace.
+  Use the figwheel library for live coding.
+  If you are here to see how the swarm work then look at swarm.logic.core.
+  For the 3D part look at the swarm.view namespace.
   "
-    (:require [swarm.tools :as t]
-              [swarm.view.core :as view]
-              [cljs.core :as core ]))
+  (:require [swarm.tools :as t]
+            [swarm.view.core :as view]
+            [cljs.core :as core ])
+  (:require-macros [swarm.macros :refer [def-]]))
 
 
 
@@ -18,20 +19,22 @@
 
 
 ;; Default options
-(defonce ^:private default-values {"width" 600
-                         "height" 600
-                         "depth" 600
-                         "boids" 40
-                         "positions" []
-                         "stats" (t/create-stats)
-                         :run true})
+(def- default-values {"width" 600
+                                   "height" 600
+                                   "depth" 600
+                                   "boids" 60
+                                   "nb-neighbours" 5
+                                   "min-distance" 30
+                                   "max-speed" 3
+                                   "stats" (t/create-stats)
+                                   :run true})
 
 ;; Application state. thread safe with atomic modifications.
 ;; Hold parameters and instances between each code recompilation.
 ;; Allow the application to perform "hot code push".
-(defonce ^:private state (atom {}))
+(defonce- state (atom {}))
 
-(def hot-code-mode true)
+(def- hot-code-mode false)
 
 (defn on-js-reload
   "Called by the figwheel library when the new compiled code is pushed"
@@ -47,10 +50,10 @@
     ;; Call the (main) function with the old state.
     ;; (main) will reuse the old state and won't regenerate everything.
     (js/setTimeout (fn []   ;; wait for the requestAnimationFrame to end
-      (swap! state assoc :run true)
-      (let [new-state (main state)]  ;; restart with the previous state
-        (reset! state new-state))  ;; keep new state
-    ), 100)))
+                     (swap! state assoc :run true)
+                     (let [new-state (main state)]  ;; restart with the previous state
+                       (reset! state new-state))  ;; keep new state
+                     ), 100)))
 
 
 ;; Only exported -public- function.
@@ -82,17 +85,14 @@
 
 
 
-(defn ^:private main
+(defn- main
   "Main entry point
   options is a map and need:
-    - a Canvas object
-    - a number of boids (default is 20)
-    - a width     (default is 600)
-    - an height     (default is 600)
-    - an depth     (default is 600)
-    optionaly:
-    - a list of positions like [[x y] [x y]...] if this parameter is specified, a boid will
-      be created for each position. So the 'number of boids' parameter will be ignored.
+  - a Canvas object
+  - a number of boids (default is 20)
+  - a width     (default is 600)
+  - an height     (default is 600)
+  - an depth     (default is 600)
   "
   [state]
   (clean-parameters! state)
@@ -101,7 +101,7 @@
 
 
 
-(defn ^:private clean-parameters!
+(defn- clean-parameters!
   "Check the app state atom to detect missing or incorrect parameters and fix it -overwrite them-."
   [state]
   ;; If the provided canvas is not a real canvas
@@ -114,7 +114,7 @@
   (check-field-number! state "boids" default-values))
 
 
-(defn ^:private check-field-number!
+(defn- check-field-number!
   "Check a numeric field and set its value to the default if not correct.
   A value is correct if it is not nil, a number and higher then 0.
   If a parameter is overwritten, a warning will be logged in the console.
@@ -124,8 +124,8 @@
         key (keyword key)]
     (when
       (or
-          (nil? item)
-          (not (number? item))
-          (<= item 0))
+       (nil? item)
+       (not (number? item))
+       (<= item 0))
       (swap! state assoc key (get default key))
-        (t/warn (str "Parameter " key " as been replaced by value " (default key))))))
+      (t/warn (str "Parameter " key " as been replaced by value " (default key))))))
