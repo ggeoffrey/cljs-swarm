@@ -1,48 +1,48 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">    
-    <link href="css/style.css" rel="stylesheet" type="text/css">
-  </head>
-  <body>
-    
-    <canvas id="target" width="800" height="600"></canvas>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="css/style.css" rel="stylesheet" type="text/css">
+    </head>
+    <body>
 
-    <script src="libs/three.min.js"></script>
-    <script src="libs/OrbitControls.js"></script>
-    <script src="libs/stats.min.js"></script>
-    <script src="libs/CanvasRenderer.js"></script>
-    <script src="libs/Projector.js"></script>
-    
-    <script src="js/compiled/swarm.js" type="text/javascript"></script>
+        <canvas id="target" width="800" height="600"></canvas>
 
-    <script>
+        <script src="libs/three.min.js"></script>
+        <script src="libs/OrbitControls.js"></script>
+        <script src="libs/stats.min.js"></script>
+        <script src="libs/CanvasRenderer.js"></script>
+        <script src="libs/Projector.js"></script>
 
-      function resize (canvas) {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-      }
+        <script src="js/compiled/swarm.js" type="text/javascript"></script>
 
-      function start(){
-        var canvas = document.getElementById('target');
+        <script>
 
-        resize(canvas);
+            function resize (canvas) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
 
-        var params = {
-          "canvas": canvas,
-          "dev-mode": true
-        };
-      
-        window.s = swarm.core.create(params);
+            function start(){
+                var canvas = document.getElementById('target');
 
-        document.body.appendChild(s.stats.domElement);
-      
-        //console.log(s);
-      }
-     
-      start();
+                resize(canvas);
 
-    </script>
-  </body>
+                var params = {
+                    "canvas": canvas,
+                    "dev-mode": true
+                };
+
+                window.s = swarm.core.create(params);
+
+                document.body.appendChild(s.stats.domElement);
+
+                //console.log(s);
+            }
+
+            start();
+
+        </script>
+    </body>
 </html>

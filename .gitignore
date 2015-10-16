@@ -51,3 +51,5 @@ $RECYCLE.BIN/
 target/
 resources/public/js/compiled/
 figwheel_server.log
+.lein-repl-history
+*.nrepl-port
