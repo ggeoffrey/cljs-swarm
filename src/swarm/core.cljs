@@ -1,6 +1,6 @@
 (ns ^:figwheel-always  swarm.core
-  "Entry point of the application. 
-   Use the figwheel library for live coding. 
+  "Entry point of the application.
+   Use the figwheel library for live coding.
    If you are here to see how the swarm work then look at swarm.logic.core.
    For the 3D part look at the swarm.view namespace.
   "
@@ -21,7 +21,7 @@
 (defonce ^:private default-values {"width" 600
                          "height" 600
                          "depth" 600
-                         "boids" 80
+                         "boids" 40
                          "positions" []
                          "stats" (t/create-stats)
                          :run true})
@@ -33,15 +33,15 @@
 
 (def hot-code-mode true)
 
-(defn on-js-reload 
+(defn on-js-reload
   "Called by the figwheel library when the new compiled code is pushed"
-  [] 
-  
-  (when-not hot-code-mode 
+  []
+
+  (when-not hot-code-mode
     ;; Stop the rendering loop by getting the "stop" closure from the state and calling it.
     (let [stop (get @state :stop)]
       (stop))
-    
+
     ;; Wait 100ms
     ;; Set the state at runnable=true
     ;; Call the (main) function with the old state.
@@ -53,18 +53,18 @@
     ), 100)))
 
 
-;; Only exported -public- function. 
-(defn ^:export create 
+;; Only exported -public- function.
+(defn ^:export create
   "Create a swarm according to the 'options' parameter.
   If 'options' is empty or invalid, the default options will be used and a warning will be
   logged if the console.
   You must provide options with at least a 'canvas' field ({canvas: CanvasElement}).
   @see swarm.core/default-values"
   [options]
-  
+
   (if (nil? options)
     (throw (new js/Error "You must provide options with at least a 'canvas' field ({canvas: CanvasElement})")))
-  (let [options (js->clj options)] 
+  (let [options (js->clj options)]
     (if (options "dev-mode")
       (do
         ;; If we are in dev mode then merge this options with the old ones -and keep the newests-
@@ -82,7 +82,7 @@
 
 
 
-(defn ^:private main 
+(defn ^:private main
   "Main entry point
   options is a map and need:
     - a Canvas object
@@ -105,10 +105,10 @@
   "Check the app state atom to detect missing or incorrect parameters and fix it -overwrite them-."
   [state]
   ;; If the provided canvas is not a real canvas
-  (when-not (t/canvas? (@state "canvas")) 
+  (when-not (t/canvas? (@state "canvas"))
     (throw (new js/Error (str "A valid canvas is needed. Got '"  (@state "canvas") "'" ))))
 
-  
+
   (check-field-number! state "width" default-values)
   (check-field-number! state "height" default-values)
   (check-field-number! state "boids" default-values))
@@ -122,8 +122,8 @@
   [state key default]
   (let [item (get @state key)
         key (keyword key)]
-    (when 
-      (or 
+    (when
+      (or
           (nil? item)
           (not (number? item))
           (<= item 0))
