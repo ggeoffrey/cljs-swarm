@@ -35,7 +35,7 @@
 
 ;; Re-use a unique object to improve perfs
 ;; Acceptable since we are in a single threaded environnement
-(def- center-shared-vector (new js/THREE.Vector3))
+(def ^:private center-shared-vector (new js/THREE.Vector3))
 
 (defn- get-center
   "Give the center of the local group"
@@ -62,7 +62,7 @@
 
 
 
-(def- center (new js/THREE.Vector3 100 100 100))
+(def ^:private center (new js/THREE.Vector3 100 100 100))
 
 (defn- stay-in-space
   "Force tho boids to stay near the center"
@@ -72,8 +72,8 @@
       (.divideScalar 1000)))
 
 
-(def- wind-default (-> (new js/THREE.Vector3  -10 -10 -10)
-                      (.divideScalar 100)))
+(def ^:private wind-default (-> (new js/THREE.Vector3  -10 -10 -10)
+                       (.divideScalar 100)))
 
 (defn- wind
   "Return a wind force"
@@ -99,7 +99,7 @@
 
 
 
-(def- shared-position (new js/THREE.Vector3))
+(def ^:private shared-position (new js/THREE.Vector3))
 
 (defn- avoid-collision
   "Avoid collision with other boids"
@@ -126,9 +126,9 @@
 
 ;; Re-use a unique object to improve perfs
 ;; Acceptable since we are in a single threaded environnement
-(def- avg-shared-vector (new js/THREE.Vector3))
+(def ^:private avg-shared-vector (new js/THREE.Vector3))
 
-(defn follow-velocity
+(defn- follow-velocity
   "Set the velocity to the average of the group"
   [item others]
   (.set avg-shared-vector 0 0 0)

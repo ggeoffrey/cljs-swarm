@@ -17,32 +17,32 @@
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 
   :cljsbuild {
-    :builds [{:id "dev"
-              :source-paths ["src"]
+              :builds [{:id "dev"
+                        :source-paths ["src"]
 
-              :figwheel { :on-jsload "swarm.core/on-js-reload" }
+                        :figwheel { :on-jsload "swarm.core/on-js-reload" }
 
-              :compiler {:main swarm.core
-                         :asset-path "js/compiled/out"
-                         :output-to "resources/public/js/compiled/swarm.js"
-                         :output-dir "resources/public/js/compiled/out"
-                         :source-map-timestamp true }}
-             {:id "min"
-              :source-paths ["src"]
-              :compiler {:output-to "resources/public/js/compiled/swarm.js"
-                         :main swarm.core
-                         :externs ["resources/public/libs/three.min.js"
-                                   "resources/public/libs/stats.min.js"
-                                   "resources/public/libs/OrbitControls.js"]
-                         ;:optimizations :whitespace
-                         :optimizations :advanced
-                         :pretty-print false
-                         :closure-warnings {:externs-validation :off}}}]}
+                        :compiler {:main swarm.core
+                                   :asset-path "js/compiled/out"
+                                   :output-to "resources/public/js/compiled/swarm.js"
+                                   :output-dir "resources/public/js/compiled/out"
+                                   :source-map-timestamp true }}
+                       {:id "min"
+                        :source-paths ["src"]
+                        :compiler {:output-to "resources/public/js/compiled/swarm.js"
+                                   :main swarm.core
+                                   :externs ["resources/public/libs/three.min.js"
+                                             "resources/public/libs/stats.min.js"
+                                             "resources/public/libs/OrbitControls.js"]
+                                   ;:optimizations :whitespace
+                                   :optimizations :advanced
+                                   :pretty-print false
+                                   :closure-warnings {:externs-validation :off}}}]}
 
   :figwheel {
-             ;; :http-server-root "public" ;; default and assumes "resources" 
+             ;; :http-server-root "public" ;; default and assumes "resources"
              ;; :server-port 3449 ;; default
-             ;; :server-ip "127.0.0.1" 
+             ;; :server-ip "127.0.0.1"
 
              :css-dirs ["resources/public/css"] ;; watch and update CSS
 
@@ -68,8 +68,8 @@
              ;; :repl false
 
              ;; to configure a different figwheel logfile path
-             ;; :server-logfile "tmp/logs/figwheel-logfile.log" 
+             ;; :server-logfile "tmp/logs/figwheel-logfile.log"
              }
   :codox {:language :clojurescript
           :src-dir-uri "https://github.com/ggeoffrey/cljs-swarm/tree/master/"}
-          :defaults {:doc/format :markdown})
+  :defaults {:doc/format :markdown})

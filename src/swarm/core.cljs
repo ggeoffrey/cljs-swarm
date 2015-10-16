@@ -7,7 +7,7 @@
   (:require [swarm.tools :as t]
             [swarm.view.view :as view]
             [cljs.core :as core ])
-  (:require-macros [swarm.macros]))
+  (:require-macros [swarm.macros :refer [def- defonce-]]))
 
 
 
@@ -20,14 +20,14 @@
 
 ;; Default options
 (def- default-values {"width" 600
-                                   "height" 600
-                                   "depth" 600
-                                   "boids" 60
-                                   "nb-neighbours" 5
-                                   "min-distance" 30
-                                   "max-speed" 3
-                                   "stats" (t/create-stats)
-                                   :run true})
+                      "height" 600
+                      "depth" 600
+                      "boids" 60
+                      "nb-neighbours" 5
+                      "min-distance" 30
+                      "max-speed" 3
+                      "stats" (t/create-stats)
+                      :run true})
 
 ;; Application state. thread safe with atomic modifications.
 ;; Hold parameters and instances between each code recompilation.

@@ -1,8 +1,8 @@
 (ns swarm.tools
   "Contains:
-    - log helpers
-    - args verification
-    - utils generation
+  - log helpers
+  - args verification
+  - utils generation
   ")
 
 
@@ -36,9 +36,9 @@
   "Chetk if the given object is a DOM canvas"
   [canvas]
   (and
-    (not (nil? canvas))
-    (not (nil? (.-nodeName canvas)))
-    (= "canvas" (.toLowerCase (.-nodeName canvas)))))
+   (not (nil? canvas))
+   (not (nil? (.-nodeName canvas)))
+   (= "canvas" (.toLowerCase (.-nodeName canvas)))))
 
 
 (defn create-stats
@@ -46,8 +46,8 @@
   []
   (let [stats (new js/Stats)
         style (-> stats
-                (.-domElement)
-                (.-style))]
+                  (.-domElement)
+                  (.-style))]
     (set! (.-position style) "absolute")
     (set! (.-left style) "0px")
     (set! (.-top style) "0px")
