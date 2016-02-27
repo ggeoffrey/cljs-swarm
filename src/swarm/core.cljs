@@ -43,12 +43,10 @@
 (def default-options {:width 6000
                       :height 6000
                       :depth 6000
-                      :amount 60
+                      :amount 120
                       :neighbours 5
-                      :min-distance 25
-                      :max-speed 10
-                      :dev-mode false})
-
+                      :min-distance 75
+                      :max-speed 12})
 
 
 (defn on-js-reload

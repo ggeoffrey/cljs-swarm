@@ -29,8 +29,7 @@
                     (-> b2 .-position)))
 
 
-
-(defn vector-sum
+(defn- vector-sum
   "Compute the sum of some vectors"
   [vecs]
   (loop [accu (vector3) ;; Accumulator, a zero vector
@@ -38,7 +37,17 @@
     (cond
      (nil? (first vecs)) accu   ;; Have we finished the list ? if it's empty then yes return what we did
      :else  ;; add to the accu and do it again with the remainings
-         (recur (.add accu (first vecs)) (rest vecs)))))
+     (recur (.add accu (first vecs)) (rest vecs)))))
+
+
+(defn vector-avg
+  "Compute the average of some vectors"
+  [vecs]
+  (cond
+   (empty? vecs) (vector3)
+   :else  (.divideScalar (vector-sum vecs)
+                         (count vecs))))
+
 
 
 

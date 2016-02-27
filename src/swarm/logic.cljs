@@ -22,7 +22,7 @@
 (defn- gravity-center
   "Compute the gravity center of a group."
   [group]
-  (maths/vector-sum (map (fn [boid] (-> boid .-position))
+  (maths/vector-avg (map (fn [boid] (.-position boid))
                          group)))
 
 
@@ -30,10 +30,12 @@
   "Try to stay close to other creatures, going to the local center. 
   Let's be social!"
   [boid group]
-  (let [center (gravity-center group)     ;; get the group's center
-        reduced-direction (-> (maths/vector-to-target (-> boid .-position) center) ;; Trace a vector between the boid and the center
-                              (.normalize))]                  ;; make it a unit vector
-    reduced-direction))
+  ;; Trace a vector between the boid and the center
+  (-> (maths/vector-to-target (.-position boid)
+                              (gravity-center group)) 
+      (.normalize) ;; make it a unit vector
+      (.negate)  ;; reverse it
+      ))
 
 
 (defn- correct-position!
@@ -69,22 +71,36 @@
        ]
     ;; ok so we have the neighbours we are going to hit
     (->> invading-friends
-         (map (fn [friend] (-> friend .-position)))  ;; get their positions
-         (cons (-> boid .-position))  ;; add the current boid's position
-         (maths/vector-sum) ;; find the center
+         (map (fn [friend] (.-position friend)))  ;; get their positions
+         (cons (.-position boid))  ;; add the current boid's position
+         (maths/vector-avg) ;; find the center
          (maths/vector-to-target (-> boid .-position)) ;; Δ from the current boid to this center
          (.normalize)  ;; make it a unit vector
-         (.negate)  ;; Flee you fool ! To the oposite direction !
+           ;; Flee you fool ! To the oposite direction !
          )))
 
 
 (defn smooth-direction
   "Force boids to try to match their neighbours direction"
   [boid group]
-  (let [others-directions (map (fn [other] (-> other .-direction)) group)]
+  (let [others-directions (map (fn [other] (.-direction other)) group)]
     (-> others-directions
-        (maths/vector-sum)
+        (maths/vector-avg)
         (.normalize))))
+
+
+(defn- stay-near-center!
+  "Make them stay around the center, like around a lightbulb"
+  [boid]
+  (.add (.-direction boid)  ;; add to the boid's direction
+        ;; the inverted, reduced, normalized
+        ;; vector towards the view's center
+        (-> (maths/vector-to-target (.-position boid) 
+                                    (maths/vector3))
+            (.normalize)
+            (.divideScalar 4)
+            (.negate)))
+  nil)
 
 ;; ------------------
 
@@ -96,9 +112,9 @@
     (doseq [b boids]   ;; foreach boid
       (let [group (local-group b boids neighbours)    ;; find his local group
             towards-center (to-center b group)        ;; get a vector towards the group's center
-            to-avoid-others (avoid-contact b group min-distance)    ;; same to avoid others
+            to-avoid-others (avoid-contact b group 75)    ;; same to avoid others
             smoothed (smooth-direction b group)   ;; same to try to follow their directions
-            direction (-> b .-direction)]
+            direction (.-direction b)]
 
         ;; Add them all to the current boid's direction
         
@@ -108,13 +124,15 @@
         (doto direction
           (.add (.divideScalar towards-center    4    ))
           (.add (.divideScalar smoothed          5    ))
-          (.add (.divideScalar to-avoid-others   0.25 ))
+          (.add (.multiplyScalar to-avoid-others 1    ))
           )
         ;; apply this translation to the effective boid's position
-        (.add (-> b .-position) direction))
+        (.add (.-position b) direction))
       
       (correct-position! b w h d)  ;; Keep boids in the cube
-      (limit-speed! b max-speed))))  
+      (stay-near-center! b)
+      (limit-speed! b max-speed)
+      )))  
 
 
 

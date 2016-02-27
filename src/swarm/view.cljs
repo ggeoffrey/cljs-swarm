@@ -96,7 +96,7 @@
           camera (js/THREE.PerspectiveCamera. 75 (/ w h) 0.1 100000)
           scene (js/THREE.Scene.)
           controls (js/THREE.OrbitControls. camera)
-          renderer (js/THREE.WebGLRenderer. #js {:antialias true
+          renderer (js/THREE.WebGLRenderer. #js {:antialias false
                                                  :canvas canvas})
           container (container3 width height depth)
           boids (boids/generate amount)
