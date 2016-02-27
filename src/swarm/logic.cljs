@@ -2,7 +2,7 @@
   "Where things start to look alive."
   (:require [swarm.tools :as t]
             [swarm.maths :as maths])
-  (:require-macros [swarm.macros :refer [limit]]))
+  (:require-macros [swarm.macros :refer [constraint]]))
 
 
 
@@ -43,10 +43,10 @@
    want our creations to know what's behind the paradox.
    Nobody escape the Matrix."
   [boid w h d]
-  (let [p (-> boid .-position)]
-    (limit p :using .setX :max-is (/ w 2) :varying-is (.-x p)) ;; Is this sorcery ?
-    (limit p :using .setY :max-is (/ h 2) :varying-is (.-y p)) ;; Yyyup! Totaly !
-    (limit p :using .setZ :max-is (/ d 2) :varying-is (.-z p)) ;; Look at the swarm.macro namespace
+  (let [p (.-position boid)]
+    (constraint p :on x :max (/ w 2) :min :opposite) ;; Is this sorcery ?
+    (constraint p :on y :max (/ h 2) :min :opposite) ;; Yyyup! Totaly !
+    (constraint p :on z :max (/ d 2) :min :opposite) ;; Look at the swarm.macro namespace
     )  
   nil)
 

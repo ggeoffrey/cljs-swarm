@@ -1,21 +1,18 @@
 (ns swarm.tools
   "Utils like loggers, formaters & stuffs"
+  (:require-macros [swarm.macros :refer [ref-to-native]])
   (:refer-clojure :exclude [print]))
+
 
 (def enabled (atom false))
 
-
 (defn enable-logging!
+  "Allow logging to console"
   ([]
+   (enable-console-print!) ;; never disabled but not really important
    (enable-logging! true))
   ([state]
    (reset! enabled (boolean state))))
-
-
-(defn disable-logging!
-  []
-  (enable-logging! false))
-
 
 
 (defn- args->js
@@ -29,10 +26,19 @@
     :else coll)))
 
 
+(def levels
+  "Native logging functions bound to keywords"
+  (let [levels (list "warn" "error" "info") ;; native levels
+        ;; we want a map like {:warn js/console.warn}
+        map (into {}   ;; put tuples into a map
+                  ;; generate tuples like [:warn console.warn]
+                  (mapv (fn [name] [(keyword name)
+                                   (ref-to-native js/console name)])
+                        levels))]
+    ;; keep the original (print) function for default logging
+    (merge map {:log cljs.core/print})))
 
-(def levels {:log  "log"
-             :warn "warn"
-             :err  "error"})
+
 
 ;; ------------------------------------
 
@@ -42,17 +48,17 @@
   ([value]
    (print :log value))
   ([loglevel value]
-   (let [value (args->js value)]
-     (case loglevel   ;; Must stay like that as javascipt is "sometime" shitty. Refactor it if you dare!
-       :warn (.warn js/console value)
-       :err (.error js/console value)
-       ;else
-       (.log js/console value)))))
-
+   (when @enabled
+     ;; extract and execute
+     ((get levels loglevel)
+      ;; with correct parameters
+      (cond 
+       (= :log loglevel) value
+       :else (args->js value))))))
 
 
 (defn stats
-  "Create a stats.js instance"
+  "Create a Stats.js instance"
   []
   (let [stats (js/Stats.)
         style (-> stats .-domElement .-style)]

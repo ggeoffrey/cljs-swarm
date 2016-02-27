@@ -17,7 +17,7 @@
                     (js/THREE.MeshLambertMaterial. #js {:visible false
                                                         :side js/THREE.BackSide
                                                         :color 0xFFFFFF}))]
-    (.copy (-> container .-position) (maths/center3 w h d))
+    (.copy (.-position container) (maths/center3 w h d))
     (set! (.-receiveShadow container) true)
     container))
 
@@ -32,13 +32,13 @@
         z (js/THREE.Geometry.)
         ;; We set the zero-point to [1 1 1]. It make the axes visible inside the cube
         zero (maths/vector3 1 1 1)]
-    (doto (-> x .-vertices)
+    (doto (.-vertices x)
       (.push zero)
       (.push (maths/vector3   7000 0 0)))
-    (doto (-> y .-vertices)
+    (doto (.-vertices y)
       (.push zero)
       (.push (maths/vector3   0 7000 0)))
-    (doto (-> z .-vertices)
+    (doto (.-vertices z)
       (.push zero)
       (.push (maths/vector3   0 0 7000)))
     (.add scene (js/THREE.Line. x
@@ -55,11 +55,11 @@
   (let [color (js/THREE.Color. 0xFFFFFF)
         shadow-map 4096
         light (js/THREE.SpotLight. color 2.0)]
-    (.set (-> light .-position) 4000 8000 4000)
-    (set! (-> light .-shadowMapWidth) shadow-map)
-    (set! (-> light .-shadowMapHeight) shadow-map)
-    (set! (-> light .-shadowCameraFar) 10000)
-    (set! (-> light .-castShadow) true)
+    (.set (.-position light) 4000 8000 4000)
+    (set! (-> light .-shadow .-mapSize .-width) shadow-map)
+    (set! (-> light .-shadow .-mapSize .-height) shadow-map)
+    (set! (-> light .-shadow .-camera .-far) 10000)
+    (set! (.-castShadow light) true)
     (.lookAt light (maths/vector3 4000 0 4000))
     light))
 
@@ -75,7 +75,7 @@
     (set! (-> plane .-rotation .-x) (/ Math.PI 2))
     (set! (-> plane .-position .-x) (/ w 2))
     (set! (-> plane .-position .-z) (/ d 2))
-    (set! (-> plane .-receiveShadow) true)
+    (set! (.-receiveShadow plane) true)
     (.add scene plane)))
 
 ;; ------------------------------
@@ -91,8 +91,8 @@
                 amount neighbours
                 min-distance max-speed]} opts]
     (let [state (atom {:run false})
-          w (-> canvas .-width)
-          h (-> canvas .-height)
+          w (.-width canvas)
+          h (.-height canvas)
           camera (js/THREE.PerspectiveCamera. 75 (/ w h) 0.1 100000)
           scene (js/THREE.Scene.)
           controls (js/THREE.OrbitControls. camera)
@@ -106,24 +106,24 @@
                     
                     (when-not (nil? stats)
                       (.begin stats))
-                      
+                    
                     (.render renderer scene camera)
 
                     (logic/update-boids! boids width height depth
                                          opts)
-                      
-                      
+                    
+                    
                     (when-not (nil? stats)
                       (.end stats)))
           ]
       (.setSize renderer w h)
       (set! (-> renderer .-shadowMap .-enabled) true)
       (.setClearColor renderer 0xf0f0f0)
-      (.set (-> camera .-position) 5000 5000 5000)
+      (.set (.-position camera) 5000 5000 5000)
 
-      (let [center (.clone (-> container .-position))]
+      (let [center (.clone (.-position container))]
         ;;SET the orbiting center to the container's center
-        (set! (-> controls .-target) center)        
+        (set! (.-target controls) center)        
         ;; make the camera look at center
         (.lookAt camera center))
 
@@ -134,7 +134,7 @@
       (.add scene container)
 
       (doseq [item boids]
-        (.copy (-> item .-position)
+        (.copy (.-position item)
                (maths/random-position width height depth))
         (.add container item))
 

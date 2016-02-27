@@ -25,8 +25,8 @@
 (defn distance
   "Compute the euclidian distance between two boids"
   [b1 b2]
-  (distance-vectors (-> b1 .-position)
-                    (-> b2 .-position)))
+  (distance-vectors (.-position b1)
+                    (.-position b2)))
 
 
 (defn- vector-sum
@@ -35,7 +35,7 @@
   (loop [accu (vector3) ;; Accumulator, a zero vector
          vecs vecs]       ;; The current list
     (cond
-     (nil? (first vecs)) accu   ;; Have we finished the list ? if it's empty then yes return what we did
+     (empty? vecs) accu   ;; Have we finished the list ? if it's empty then yes return what we did
      :else  ;; add to the accu and do it again with the remainings
      (recur (.add accu (first vecs)) (rest vecs)))))
 
@@ -47,8 +47,6 @@
    (empty? vecs) (vector3)
    :else  (.divideScalar (vector-sum vecs)
                          (count vecs))))
-
-
 
 
 (defn vector-to-target
@@ -65,7 +63,7 @@
 (defn random-in-range
   "Give a random number in [-n/2..n/2]"
   [n]
-  (- (rand n) (/ n 2)))
+  (- (rand n)(/ n 2)))
 
 
 (defn random-position 

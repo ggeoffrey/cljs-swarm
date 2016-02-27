@@ -31,7 +31,7 @@
   (let [boid (js/THREE.Mesh.
               (geometry3)
               (material3))]
-    (set! (-> boid .-direction) (maths/vector3  1 1 -1))
+    (set! (.-direction boid) (maths/vector3  1 1 -1))
     (set! (.-castShadow boid) true)
     boid))
 

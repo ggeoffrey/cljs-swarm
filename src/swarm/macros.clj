@@ -1,14 +1,29 @@
 (ns swarm.macros
   "Where some witchcraft takes place. If you dare to enter this misterious place
-   be sure to know the secret art of Abstract Syntax Tree manipulation.")
+  be sure to know the secret art of Abstract Syntax Tree manipulation."
+  (:require [clojure.string :as s]))
 
 
-(defmacro limit
+
+(defmacro ref-to-native
+  "Give a referenc to a native function
+  while preserving the original binding"
+  [native-object function]
+  `(-> ~native-object
+       (aget ~function)
+       (.bind ~native-object)))
+
+
+
+(defmacro constraint
   "Generate a condition list that will keep a boid in bounds for a particular axis"
-  [position & {:keys [using max-is varying-is]}]
-  (let [setter using
-        axis varying-is
-        max-value max-is]
-    `(cond ;; Below 0 or above the width on max-value
-      (< ~axis (- ~max-value)) (~setter ~position ~max-value)
-      (> ~axis ~max-value) (~setter ~position (- ~max-value)))))
+  [position & {:keys [on max min]}]
+  (let [setter (symbol (str ".set"
+                            (s/upper-case (str on))))
+        accessor (symbol (str ".-" on))]
+    `(let [min# (cond
+                (= :opposite ~min) (- ~max)
+                :else ~min)]
+         (cond
+          (< (~accessor ~position) min#) (~setter ~position ~max)
+          (> (~accessor ~position) ~max) (~setter ~position min#)))))

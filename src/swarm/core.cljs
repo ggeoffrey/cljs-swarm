@@ -40,24 +40,26 @@
   (:refer-clojure :exclude [print]))
 
 
-(def default-options {:width 6000
-                      :height 6000
-                      :depth 6000
-                      :amount 120
-                      :neighbours 5
-                      :min-distance 75
-                      :max-speed 12})
+(def default-options
+  "Will be overwritten by user's options"
+  {:width 6000
+   :height 6000
+   :depth 6000
+   :amount 120
+   :neighbours 5
+   :min-distance 75
+   :max-speed 12
+   :dev-mode true})
 
 
 (defn on-js-reload
   "Called by fighweel after hot code push"
   []
-  ;; doing nothing ATM.
+  ;; doing nothing.
   )
 
 
-;; Not finished yet
-;; TODO
+;; TODO: check and clean parametres
 (defn- build-options
   "Merge user options with default ones, clean and check."
   [user-opts]
@@ -72,8 +74,9 @@
   "Entry point, unmangled name"
   [options]
   (let [options (build-options options)]   ;; get clean parameters
-    (t/enable-logging! (:dev-mode options))  ;; enable dev-mode accordingly
-    (enable-console-print!)                  ;; same here
+    (when (:dev-mode options)
+      (t/enable-logging!))       ;; enable console output
+  
     ;;return what the view returns as a JS object
     (clj->js
      (view options))))
