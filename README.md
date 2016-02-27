@@ -1,9 +1,9 @@
 # Swarm prototype
 
-Made in ClojureScript (a LISP) and ThreeJS
+Made in ClojureScript (a Lisp) and ThreeJS.
 
 See it running at [ggeoffrey.github.io/swarm](http://ggeoffrey.github.io/swarm/)
 
+Curious ? Start with `src/swarm/core.cljs`
 
-
-*This is just a prototype -> the code may be dirty or uncommented.*
+*The code is almost done but not 100% perfect.*
