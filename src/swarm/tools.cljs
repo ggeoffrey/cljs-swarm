@@ -1,54 +1,77 @@
 (ns swarm.tools
-  "Contains:
-  - log helpers
-  - args verification
-  - utils generation
-  ")
+  "Utils like loggers, formaters & stuffs"
+  (:refer-clojure :exclude [print]))
+
+(def enabled (atom false))
 
 
-
-(defn- get-args
-  "Return the first arg or all the list as a js-obj"
-  [collection]
-  (if (= (count collection) 1)
-    (clj->js (first collection))
-    (clj->js collection)))
+(defn enable-logging!
+  ([]
+   (reset! enabled true))
+  ([state]
+   (reset! enabled (boolean state))))
 
 
-(defn log
-  "Log in the console.
-  If a collection of size 1 is given then only the first item will be printed.
-  Else the collection will be printed as a JS array.
-  "
-  [& args]
-  (.log js/console (get-args args)))
-
-(defn warn
-  "Warn in the console.
-  If a collection of size 1 is given then only the first item will be printed.
-  Else the collection will be printed as a JS array.
-  "
-  [& args]
-  (.warn js/console (get-args args)))
-
-
-(defn canvas?
-  "Chetk if the given object is a DOM canvas"
-  [canvas]
-  (and
-   (not (nil? canvas))
-   (not (nil? (.-nodeName canvas)))
-   (= "canvas" (.toLowerCase (.-nodeName canvas)))))
-
-
-(defn create-stats
-  "Create a Stat.js instance and set it to appear in the upper-left corner as a HUD."
+(defn disable-logging!
   []
-  (let [stats (new js/Stats)
-        style (-> stats
-                  (.-domElement)
-                  (.-style))]
-    (set! (.-position style) "absolute")
-    (set! (.-left style) "0px")
-    (set! (.-top style) "0px")
+  (enable-logging! false))
+
+
+
+(defn- args->js
+  "Convert args to a printable javascript item or array"
+  [coll]
+  (clj->js
+   (cond
+    (not (seq? coll)) coll
+    (empty? coll) nil
+    (nil? (first (rest coll))) (first coll)
+    :else coll)))
+
+
+
+(def levels {:log  "log"
+             :warn "warn"
+             :err  "error"})
+
+;; ------------------------------------
+
+
+(defn print
+  "Print with a particular loglevel."
+  ([value]
+   (print :log value))
+  ([loglevel value]
+   (let [value (args->js value)]
+     (case loglevel   ;; Must stay like that as javascipt is "sometime" shitty. Refactor it if you dare!
+       :warn (.warn js/console value)
+       :err (.error js/console value)
+       ;else
+       (.log js/console value)))))
+
+
+
+(defn stats
+  "Create a stats.js instance"
+  []
+  (let [stats (js/Stats.)
+        style (-> stats .-domElement .-style)]
+    (set! (-> style .-position) "absolute")
+    (set! (-> style .-left) "0px")
+    (set! (-> style .-right) "0px")
     stats))
+
+
+(defn vector3
+  ([]
+   (vector3 0 0 0))
+  ([x y z]
+   (js/THREE.Vector3. x y z)))
+
+
+
+
+
+
+
+

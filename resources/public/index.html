@@ -31,10 +31,12 @@
 
                 var params = {
                     "canvas": canvas,
-                    "dev-mode": true
+                    "dev-mode": true
                 };
 
-                window.s = swarm.core.create(params);
+            window.s = swarm.core.main(params);
+
+            s.start();
 
                 document.body.appendChild(s.stats.domElement);
 
