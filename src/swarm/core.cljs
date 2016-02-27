@@ -43,7 +43,7 @@
 (def default-options {:width 6000
                       :height 6000
                       :depth 6000
-                      :amount 80
+                      :amount 60
                       :neighbours 5
                       :min-distance 25
                       :max-speed 10

@@ -7,7 +7,7 @@
 
 (defn enable-logging!
   ([]
-   (reset! enabled true))
+   (enable-logging! true))
   ([state]
    (reset! enabled (boolean state))))
 
@@ -60,18 +60,5 @@
     (set! (-> style .-left) "0px")
     (set! (-> style .-right) "0px")
     stats))
-
-
-(defn vector3
-  ([]
-   (vector3 0 0 0))
-  ([x y z]
-   (js/THREE.Vector3. x y z)))
-
-
-
-
-
-
 
 

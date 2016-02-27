@@ -1,6 +1,7 @@
 (ns swarm.boids
   "Everything to build boids. Inside a small and fancy pocket!"
-  (:require [swarm.tools :as t]))
+  (:require [swarm.tools :as t]
+            [swarm.maths :as maths]))
 
 
 (defn- ->geometry3
@@ -30,7 +31,7 @@
   (let [boid (js/THREE.Mesh.
               (geometry3)
               (material3))]
-    (set! (-> boid .-direction) (t/vector3 1 1 -1))
+    (set! (-> boid .-direction) (maths/vector3  1 1 -1))
     (set! (.-castShadow boid) true)
     boid))
 

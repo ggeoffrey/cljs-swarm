@@ -1,27 +1,10 @@
 (ns swarm.view
   "Everything to build the view. Using THREE.JS"
   (:require [swarm.tools :as t]
+            [swarm.maths :as maths]
             [swarm.boids :as boids]
             [swarm.logic :as logic]))
 
-
-(defn- random-in-range
-  "Give a random number in [-n/2..n/2]"
-  [n]
-  (- (rand n) (/ n 2)))
-
-
-(defn- random-position 
-  "Give a random point in a given range -width height depth respectively-"
-  [w h d]
-  (apply t/vector3 (map random-in-range (list w h d))))
-
-
-(defn- center3
-  "Return the view's center based on its width, height and depth -respectivily-."
-  [w h d]
-  (apply t/vector3 (map (fn [x] (/ x 2))
-                        (list w h d))))
 
 
 (defn- container3
@@ -34,7 +17,7 @@
                     (js/THREE.MeshLambertMaterial. #js {:visible false
                                                         :side js/THREE.BackSide
                                                         :color 0xFFFFFF}))]
-    (.copy (-> container .-position) (center3 w h d))
+    (.copy (-> container .-position) (maths/center3 w h d))
     (set! (.-receiveShadow container) true)
     container))
 
@@ -48,16 +31,16 @@
         y (js/THREE.Geometry.)
         z (js/THREE.Geometry.)
         ;; We set the zero-point to [1 1 1]. It make the axes visible inside the cube
-        zero (t/vector3 1 1 1)]
+        zero (maths/vector3 1 1 1)]
     (doto (-> x .-vertices)
       (.push zero)
-      (.push (t/vector3   7000 0 0)))
+      (.push (maths/vector3   7000 0 0)))
     (doto (-> y .-vertices)
       (.push zero)
-      (.push (t/vector3   0 7000 0)))
+      (.push (maths/vector3   0 7000 0)))
     (doto (-> z .-vertices)
       (.push zero)
-      (.push (t/vector3   0 0 7000)))
+      (.push (maths/vector3   0 0 7000)))
     (.add scene (js/THREE.Line. x
                                 (js/THREE.LineBasicMaterial. #js {:color 0xff0000})))
     (.add scene (js/THREE.Line. y
@@ -77,7 +60,7 @@
     (set! (-> light .-shadowMapHeight) shadow-map)
     (set! (-> light .-shadowCameraFar) 10000)
     (set! (-> light .-castShadow) true)
-    (.lookAt light (t/vector3 4000 0 4000))
+    (.lookAt light (maths/vector3 4000 0 4000))
     light))
 
 
@@ -151,7 +134,8 @@
       (.add scene container)
 
       (doseq [item boids]
-        (.copy (-> item .-position) (random-position width height depth))
+        (.copy (-> item .-position)
+               (maths/random-position width height depth))
         (.add container item))
 
 
