@@ -1,13 +1,12 @@
 (ns swarm.tools
-  "Utils like loggers, formaters & stuffs"
-  (:require-macros [swarm.macros :refer [ref-to-native]])
+  "Utils like loggers, formaters & stuffs."
   (:refer-clojure :exclude [print]))
 
 
 (def enabled (atom false))
 
 (defn enable-logging!
-  "Allow logging to console"
+  "Allow logging to console."
   ([]
    (enable-console-print!) ;; never disabled but not really important
    (enable-logging! true))
@@ -16,7 +15,7 @@
 
 
 (defn- args->js
-  "Convert args to a printable javascript item or array"
+  "Convert args to a printable javascript item or array."
   [coll]
   (clj->js
    (cond
@@ -25,9 +24,15 @@
     (nil? (first (rest coll))) (first coll)
     :else coll)))
 
+(defn- ref-to-native
+  "Give a reference to a native function
+  while preserving the original binding."
+  [native-object function]
+  (.bind  (aget native-object function) native-object))
+
 
 (def levels
-  "Native logging functions bound to keywords"
+  "Native logging functions bound to keywords."
   (let [levels (list "warn" "error" "info") ;; native levels
         ;; we want a map like {:warn js/console.warn}
         map (into {}   ;; put tuples into a map
@@ -58,7 +63,7 @@
 
 
 (defn stats
-  "Create a Stats.js instance"
+  "Create a Stats.js instance."
   []
   (let [stats (js/Stats.)
         style (-> stats .-domElement .-style)]

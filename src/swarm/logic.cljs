@@ -2,7 +2,7 @@
   "Where things start to look alive."
   (:require [swarm.tools :as t]
             [swarm.maths :as maths])
-  (:require-macros [swarm.macros :refer [constraint]]))
+  (:require-macros [swarm.macros :refer [constrain]]))
 
 
 
@@ -44,9 +44,9 @@
    Nobody escape the Matrix."
   [boid w h d]
   (let [p (.-position boid)]
-    (constraint p :on x :max (/ w 2) :min :opposite) ;; Is this sorcery ?
-    (constraint p :on y :max (/ h 2) :min :opposite) ;; Yyyup! Totaly !
-    (constraint p :on z :max (/ d 2) :min :opposite) ;; Look at the swarm.macro namespace
+    (constrain p :on x :max (/ w 2) :min :opposite) ;; Is this sorcery ?
+    (constrain p :on y :max (/ h 2) :min :opposite) ;; Yyyup! Totaly !
+    (constrain p :on z :max (/ d 2) :min :opposite) ;; Look at the swarm.macro namespace
     )  
   nil)
 
@@ -66,7 +66,7 @@
   (let [direction (-> boid .-direction) ;; get the direction
         invading-friends (->> group
                               (map (fn [other] (list (maths/distance boid other) other))) ;; get the deltas
-                              (filter (fn [tuple] (< (first tuple) min-distance)))  ;; keep the one that are too close
+                              (filter (fn [tuple] (< (first tuple) min-distance)))  ;; keep the ones that are too close
                               (map last)) ;; and keep only the boids, dropping the distance
        ]
     ;; ok so we have the neighbours we are going to hit
@@ -76,12 +76,11 @@
          (maths/vector-avg) ;; find the center
          (maths/vector-to-target (-> boid .-position)) ;; Δ from the current boid to this center
          (.normalize)  ;; make it a unit vector
-           ;; Flee you fool ! To the oposite direction !
          )))
 
 
 (defn smooth-direction
-  "Force boids to try to match their neighbours direction"
+  "Force boids to try to match their neighbours direction."
   [boid group]
   (let [others-directions (map (fn [other] (.-direction other)) group)]
     (-> others-directions
@@ -90,7 +89,7 @@
 
 
 (defn- stay-near-center!
-  "Make them stay around the center, like around a lightbulb"
+  "Make them stay around the center, like around a lightbulb."
   [boid]
   (.add (.-direction boid)  ;; add to the boid's direction
         ;; the inverted, reduced, normalized
@@ -129,7 +128,7 @@
         ;; apply this translation to the effective boid's position
         (.add (.-position b) direction))
       
-      (correct-position! b w h d)  ;; Keep boids in the cube
+      (correct-position! b w h d)  ;; Keep this boid in the cube
       (stay-near-center! b)
       (limit-speed! b max-speed)
       )))  

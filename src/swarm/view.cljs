@@ -1,16 +1,15 @@
 (ns swarm.view
-  "Everything to build the view. Using THREE.JS"
+  "Everything to build the view. Using THREE.JS."
   (:require [swarm.tools :as t]
             [swarm.maths :as maths]
             [swarm.boids :as boids]
             [swarm.logic :as logic]))
 
 
-
 (defn- container3
   "Create an inside-out Cube. Used as a container for the boids.
   The cube is colored inside and transparent from the outside.
-  NOTE:  The cube is currently transparent and replaced by a plane…"
+  NOTE:  The cube is currently transparent and replaced by a plane."
   [w h d]
   (let [container  (js/THREE.Mesh.
                     (js/THREE.CubeGeometry. w h d)
@@ -50,7 +49,7 @@
 
 
 (defn- light
-  "Create a custom SpotLight"
+  "Create a custom SpotLight."
   []
   (let [color (js/THREE.Color. 0xFFFFFF)
         shadow-map 4096
@@ -65,7 +64,7 @@
 
 
 
-(defn add-ground!
+(defn- add-ground!
   "Add a plane as a ground, or floor, or whatever…"
   [scene w d]
   (let [plane (js/THREE.Mesh.
@@ -89,20 +88,21 @@
   (let [{:keys [canvas stats
                 width height depth
                 amount neighbours
-                min-distance max-speed]} opts]
-    (let [state (atom {:run false})
+                min-distance max-speed]} opts]  ;; Extract options
+    (let [state (atom {:run false})  ;; simulation state
           w (.-width canvas)
           h (.-height canvas)
           camera (js/THREE.PerspectiveCamera. 75 (/ w h) 0.1 100000)
           scene (js/THREE.Scene.)
           controls (js/THREE.OrbitControls. camera)
-          renderer (js/THREE.WebGLRenderer. #js {:antialias false
+          renderer (js/THREE.WebGLRenderer. #js {:antialias true
                                                  :canvas canvas})
-          container (container3 width height depth)
-          boids (boids/generate amount)
-          render! (fn render! []
-                    (when (:run @state)                      
-                      (.requestAnimationFrame js/window render!))
+          container (container3 width height depth)  ;; a box where we can put boids
+          boids (boids/generate amount)  ;; generate n boids
+          render! (fn render! []     ;; render function
+                    (when (:run @state)
+                      ;; if it's running, reschedule next  frame
+                      (.requestAnimationFrame js/window render!))  
                     
                     (when-not (nil? stats)
                       (.begin stats))
@@ -112,29 +112,28 @@
                     (logic/update-boids! boids width height depth
                                          opts)
                     
-                    
                     (when-not (nil? stats)
                       (.end stats)))
           ]
-      (.setSize renderer w h)
-      (set! (-> renderer .-shadowMap .-enabled) true)
-      (.setClearColor renderer 0xf0f0f0)
+      (.setSize renderer w h)  ;; scale to screen
+      (set! (-> renderer .-shadowMap .-enabled) true)  ;; enable shadows
+      (.setClearColor renderer 0xf0f0f0)  ;; background color
       (.set (.-position camera) 5000 5000 5000)
 
       (let [center (.clone (.-position container))]
-        ;;SET the orbiting center to the container's center
+        ;; set the orbiting center to the container's center
         (set! (.-target controls) center)        
         ;; make the camera look at center
         (.lookAt camera center))
 
-      ;; ADD objects to the scene
+      ;; add objects to the scene
       (draw-axes! scene)
       (.add scene (light))
       (add-ground! scene width depth)
       (.add scene container)
 
-      (doseq [item boids]
-        (.copy (.-position item)
+      (doseq [item boids] ;; add each boids
+        (.copy (.-position item)   ;; at a random start position
                (maths/random-position width height depth))
         (.add container item))
 
@@ -143,7 +142,7 @@
       (render!)
 
       
-      ;; return
+      ;; return callbacks
       {:stats stats
        :start (fn []
                 (when (false? (:run @state))

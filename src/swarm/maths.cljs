@@ -3,45 +3,39 @@
 
 
 (defn vector3
+  "Create a 3 dimentional vector. Default is [0,0,0]."
   ([]
    (vector3 0 0 0))
   ([x y z]
    (js/THREE.Vector3. x y z)))
 
 
-(defn square
-  "Put x to the square"
-  [x]
-  (* x x))
-
-
 (defn- distance-vectors
-  "Distance between two vector3"
+  "Distance between two vector3."
   [v1 v2]
   (.distanceTo v1 v2))
 
 
-
 (defn distance
-  "Compute the euclidian distance between two boids"
+  "Compute the euclidian distance between two boids."
   [b1 b2]
   (distance-vectors (.-position b1)
                     (.-position b2)))
 
 
 (defn- vector-sum
-  "Compute the sum of some vectors"
+  "Compute the sum of some vectors."
   [vecs]
   (loop [accu (vector3) ;; Accumulator, a zero vector
          vecs vecs]       ;; The current list
     (cond
-     (empty? vecs) accu   ;; Have we finished the list ? if it's empty then yes return what we did
+     (empty? vecs) accu   ;; Have we finished the list ? if it's empty then yes, return what we did
      :else  ;; add to the accu and do it again with the remainings
      (recur (.add accu (first vecs)) (rest vecs)))))
 
 
 (defn vector-avg
-  "Compute the average of some vectors"
+  "Compute the average of some vectors."
   [vecs]
   (cond
    (empty? vecs) (vector3)
@@ -61,13 +55,13 @@
 
 
 (defn random-in-range
-  "Give a random number in [-n/2..n/2]"
+  "Give a random number in [-n/2..n/2]."
   [n]
   (- (rand n)(/ n 2)))
 
 
 (defn random-position 
-  "Give a random point in a given range -width height depth respectively-"
+  "Give a random point in a given range -width height depth respectively-."
   [w h d]
   (apply vector3 (map random-in-range (list w h d))))
 
