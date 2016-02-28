@@ -1,6 +1,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;|
 ;;                                                                   |
-;;  Hi visitor ! Glade to see you here !                             |
+;;  Hi visitor ! Glad to see you here !                             |
 ;;  Ready to eat some brackets ?                                     |
 ;;                                                                   |
 ;;  This is serious ! So first, please have                          |
